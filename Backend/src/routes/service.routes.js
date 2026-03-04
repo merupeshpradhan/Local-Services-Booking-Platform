@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createService,
+  deleteService,
   getAllServices,
   getSingleService,
   updateService,
@@ -17,5 +18,6 @@ router.get("/:id", getSingleService);
 // 🔒 Protected Route (Provider only)
 router.post("/", verifyJWT, createService);
 router.put("/:id", verifyJWT, updateService);
+router.delete("/:id", verifyJWT, deleteService);
 
 export default router;

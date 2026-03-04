@@ -113,3 +113,34 @@ export const updateService = async (req, res) => {
     });
   }
 };
+
+// 🔹 Delete Service (Provider Only)
+export const deleteService = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find service by ID
+    const service = await Service.findById(id);
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    // Check ownership
+    if (service.provider.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own services" });
+    }
+
+    await service.deleteOne();
+
+    res.status(200).json({
+      message: "Service deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to delete service",
+      error: error.message,
+    });
+  }
+};
