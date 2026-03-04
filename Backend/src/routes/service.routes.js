@@ -3,6 +3,7 @@ import {
   createService,
   getAllServices,
   getSingleService,
+  updateService,
 } from "../controllers/service.controller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -15,5 +16,6 @@ router.get("/:id", getSingleService);
 
 // 🔒 Protected Route (Provider only)
 router.post("/", verifyJWT, createService);
+router.put("/:id", verifyJWT, updateService);
 
 export default router;

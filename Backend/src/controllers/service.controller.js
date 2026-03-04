@@ -78,3 +78,38 @@ export const getSingleService = async (req, res) => {
     });
   }
 };
+
+// 🔹 Update Service (Provider Only)
+export const updateService = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    // Find service by ID
+    const service = await Service.findById(id);
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    // Check ownership
+    if (service.provider.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You can only update your own services" });
+    }
+
+    // Apply updates
+    Object.assign(service, updates);
+    await service.save();
+
+    res.status(200).json({
+      message: "Service updated successfully",
+      service,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update service",
+      error: error.message,
+    });
+  }
+};
