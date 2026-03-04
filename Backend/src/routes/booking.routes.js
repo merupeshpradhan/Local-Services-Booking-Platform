@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  cancelBooking,
   createBooking,
   getUserBookings,
   updateBookingStatus,
@@ -16,5 +17,8 @@ router.get("/", verifyJWT, getUserBookings);
 
 // 🔒 Provider updates booking status
 router.put("/:id/status", verifyJWT, updateBookingStatus);
+
+// 🔒 Customer cancels booking
+router.put("/:id/cancel", verifyJWT, cancelBooking);
 
 export default router;

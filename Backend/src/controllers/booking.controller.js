@@ -93,3 +93,42 @@ export const updateBookingStatus = async (req, res) => {
     });
   }
 };
+
+// 🔹 Cancel Booking (Customer Only)
+export const cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Only the customer of the booking can cancel
+    if (booking.customer.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Only the customer can cancel this booking" });
+    }
+
+    // Only allow canceling if booking is not completed
+    if (booking.status === "Completed") {
+      return res
+        .status(400)
+        .json({ message: "Completed bookings cannot be cancelled" });
+    }
+
+    booking.status = "Cancelled";
+    await booking.save();
+
+    res.status(200).json({
+      message: "Booking cancelled successfully",
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to cancel booking",
+      error: error.message,
+    });
+  }
+};
