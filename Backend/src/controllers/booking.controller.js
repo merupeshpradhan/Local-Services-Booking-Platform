@@ -1,134 +1,68 @@
 import Booking from "../models/Booking.model.js";
 import Service from "../models/Service.model.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import { successResponse } from "../utils/ApiResponse.js";
 
-// 🔹 Create Booking (Customer Only)
-export const createBooking = async (req, res) => {
-  try {
-    const { serviceId, address, date, notes } = req.body;
+// Create Booking (Customer only)
+export const createBooking = asyncHandler(async (req, res) => {
+  if (req.user.role !== "customer")
+    throw new ApiError(403, "Only customers can create bookings");
 
-    // Only customers can create booking
-    if (req.user.role !== "customer") {
-      return res.status(403).json({
-        message: "Only customers can create bookings",
-      });
-    }
+  const { serviceId, address, date, notes } = req.body;
+  const service = await Service.findById(serviceId);
+  if (!service) throw new ApiError(404, "Service not found");
 
-    const service = await Service.findById(serviceId);
-    if (!service) {
-      return res.status(404).json({ message: "Service not found" });
-    }
+  const booking = await Booking.create({
+    service: service._id,
+    customer: req.user._id,
+    provider: service.provider,
+    address,
+    date,
+    notes,
+    price: service.price,
+  });
 
-    const booking = await Booking.create({
-      service: service._id,
-      customer: req.user._id,
-      provider: service.provider,
-      address,
-      date,
-      notes,
-      price: service.price,
-    });
+  successResponse(res, booking, "Booking created successfully", 201);
+});
 
-    res.status(201).json({
-      message: "Booking created successfully",
-      booking,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to create booking",
-      error: error.message,
-    });
-  }
-};
+// Get bookings for user
+export const getUserBookings = asyncHandler(async (req, res) => {
+  const bookings = await Booking.find({
+    $or: [{ customer: req.user._id }, { provider: req.user._id }],
+  })
+    .populate("service", "title price")
+    .populate("customer", "fullName email")
+    .populate("provider", "fullName email")
+    .sort({ createdAt: -1 });
 
-// 🔹 Get All Bookings for User
-export const getUserBookings = async (req, res) => {
-  try {
-    const bookings = await Booking.find({
-      $or: [{ customer: req.user._id }, { provider: req.user._id }],
-    })
-      .populate("service", "title price")
-      .populate("customer", "fullName email")
-      .populate("provider", "fullName email")
-      .sort({ createdAt: -1 });
+  successResponse(res, bookings, "Bookings fetched successfully");
+});
 
-    res.status(200).json({
-      message: "Bookings fetched successfully",
-      bookings,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch bookings",
-      error: error.message,
-    });
-  }
-};
+// Update Booking Status (Provider only)
+export const updateBookingStatus = asyncHandler(async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) throw new ApiError(404, "Booking not found");
+  if (booking.provider.toString() !== req.user._id.toString())
+    throw new ApiError(403, "Only provider can update status");
 
-// 🔹 Update Booking Status (Provider Only)
-export const updateBookingStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
+  booking.status = req.body.status;
+  await booking.save();
 
-    const booking = await Booking.findById(id);
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
+  successResponse(res, booking, "Booking status updated successfully");
+});
 
-    // Only the provider of the service can update status
-    if (booking.provider.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Only the provider can update the booking status" });
-    }
+// Cancel Booking (Customer only)
+export const cancelBooking = asyncHandler(async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) throw new ApiError(404, "Booking not found");
+  if (booking.customer.toString() !== req.user._id.toString())
+    throw new ApiError(403, "Only customer can cancel booking");
+  if (booking.status === "Completed")
+    throw new ApiError(400, "Completed bookings cannot be cancelled");
 
-    booking.status = status;
-    await booking.save();
+  booking.status = "Cancelled";
+  await booking.save();
 
-    res.status(200).json({
-      message: "Booking status updated successfully",
-      booking,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to update booking",
-      error: error.message,
-    });
-  }
-};
-
-// 🔹 Cancel Booking (Customer Only)
-export const cancelBooking = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const booking = await Booking.findById(id);
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
-
-    // Only the customer of the booking can cancel
-    if (booking.customer.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Only the customer can cancel this booking" });
-    }
-
-    // Only allow canceling if booking is not completed
-    if (booking.status === "Completed") {
-      return res
-        .status(400)
-        .json({ message: "Completed bookings cannot be cancelled" });
-    }
-
-    booking.status = "Cancelled";
-    await booking.save();
-
-    res.status(200).json({
-      message: "Booking cancelled successfully",
-      booking,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to cancel booking",
-      error: error.message,
-    });
-  }
-};
+  successResponse(res, booking, "Booking cancelled successfully");
+});

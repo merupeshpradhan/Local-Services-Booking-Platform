@@ -1,146 +1,65 @@
 import Service from "../models/Service.model.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import { successResponse } from "../utils/ApiResponse.js";
 
-// 🔹 Create Service (Provider Only)
-export const createService = async (req, res) => {
-  try {
-    const { title, description, price, category } = req.body;
+// Create Service
+export const createService = asyncHandler(async (req, res) => {
+  if (req.user.role !== "provider")
+    throw new ApiError(403, "Only providers can create services");
 
-    // Check if user is provider
-    if (req.user.role !== "provider") {
-      return res.status(403).json({
-        message: "Only providers can create services",
-      });
-    }
+  const { title, description, price, category } = req.body;
 
-    const service = await Service.create({
-      title,
-      description,
-      price,
-      category,
-      provider: req.user._id, // from JWT middleware
-    });
+  const service = await Service.create({
+    title,
+    description,
+    price,
+    category,
+    provider: req.user._id,
+  });
 
-    res.status(201).json({
-      message: "Service created successfully",
-      service,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to create service",
-      error: error.message,
-    });
-  }
-};
+  successResponse(res, service, "Service created successfully", 201);
+});
 
-// 🔹 Get All Services
-export const getAllServices = async (req, res) => {
-  try {
-    const services = await Service.find()
-      .populate("provider", "fullName email role")
-      .sort({ createdAt: -1 });
+// Get All Services
+export const getAllServices = asyncHandler(async (req, res) => {
+  const services = await Service.find()
+    .populate("provider", "fullName email role")
+    .sort({ createdAt: -1 });
+  successResponse(res, services, "Services fetched successfully");
+});
 
-    res.status(200).json({
-      message: "Services fetched successfully",
-      services,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch services",
-      error: error.message,
-    });
-  }
-};
+// Get Single Service
+export const getSingleService = asyncHandler(async (req, res) => {
+  const service = await Service.findById(req.params.id).populate(
+    "provider",
+    "fullName email role",
+  );
+  if (!service) throw new ApiError(404, "Service not found");
 
-// 🔹 Get Single Service
-export const getSingleService = async (req, res) => {
-  try {
-    const { id } = req.params;
+  successResponse(res, service, "Service fetched successfully");
+});
 
-    const service = await Service.findById(id).populate(
-      "provider",
-      "fullName email role",
-    );
+// Update Service
+export const updateService = asyncHandler(async (req, res) => {
+  const service = await Service.findById(req.params.id);
+  if (!service) throw new ApiError(404, "Service not found");
+  if (service.provider.toString() !== req.user._id.toString())
+    throw new ApiError(403, "You can only update your own services");
 
-    if (!service) {
-      return res.status(404).json({
-        message: "Service not found",
-      });
-    }
+  Object.assign(service, req.body);
+  await service.save();
 
-    res.status(200).json({
-      message: "Service fetched successfully",
-      service,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch service",
-      error: error.message,
-    });
-  }
-};
+  successResponse(res, service, "Service updated successfully");
+});
 
-// 🔹 Update Service (Provider Only)
-export const updateService = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
+// Delete Service
+export const deleteService = asyncHandler(async (req, res) => {
+  const service = await Service.findById(req.params.id);
+  if (!service) throw new ApiError(404, "Service not found");
+  if (service.provider.toString() !== req.user._id.toString())
+    throw new ApiError(403, "You can only delete your own services");
 
-    // Find service by ID
-    const service = await Service.findById(id);
-    if (!service) {
-      return res.status(404).json({ message: "Service not found" });
-    }
-
-    // Check ownership
-    if (service.provider.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "You can only update your own services" });
-    }
-
-    // Apply updates
-    Object.assign(service, updates);
-    await service.save();
-
-    res.status(200).json({
-      message: "Service updated successfully",
-      service,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to update service",
-      error: error.message,
-    });
-  }
-};
-
-// 🔹 Delete Service (Provider Only)
-export const deleteService = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Find service by ID
-    const service = await Service.findById(id);
-    if (!service) {
-      return res.status(404).json({ message: "Service not found" });
-    }
-
-    // Check ownership
-    if (service.provider.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "You can only delete your own services" });
-    }
-
-    await service.deleteOne();
-
-    res.status(200).json({
-      message: "Service deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to delete service",
-      error: error.message,
-    });
-  }
-};
+  await service.deleteOne();
+  successResponse(res, null, "Service deleted successfully");
+});
