@@ -10,7 +10,7 @@ export default function ProviderBookings({ user }) {
       const res = await API.get("/bookings");
 
       const providerBookings = res.data.data.filter(
-        (b) => b.provider._id === user._id
+        (b) => b.provider._id === user._id,
       );
 
       setBookings(providerBookings);
@@ -34,16 +34,16 @@ export default function ProviderBookings({ user }) {
   };
 
   // Delete booking
-  const deleteBooking = async (id) => {
-    if (window.confirm("Delete this booking?")) {
-      try {
-        await API.delete(`/bookings/${id}`);
-        fetchBookings();
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  };
+  // const deleteBooking = async (id) => {
+  //   if (window.confirm("Delete this booking?")) {
+  //     try {
+  //       await API.delete(`/bookings/${id}`);
+  //       fetchBookings();
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   }
+  // };
 
   return (
     <div className="mt-8">
@@ -52,10 +52,7 @@ export default function ProviderBookings({ user }) {
       {bookings.length === 0 && <p>No booking requests</p>}
 
       {bookings.map((b) => (
-        <div
-          key={b._id}
-          className="border p-4 rounded mb-4 shadow bg-white"
-        >
+        <div key={b._id} className="border p-4 rounded mb-4 shadow bg-white">
           <p>
             <b>Service:</b> {b.service.title}
           </p>
@@ -77,7 +74,6 @@ export default function ProviderBookings({ user }) {
           </p>
 
           <div className="flex gap-2 mt-3">
-
             {/* Requested */}
             {b.status === "Requested" && (
               <>
@@ -118,15 +114,14 @@ export default function ProviderBookings({ user }) {
             )}
 
             {/* Completed */}
-            {b.status === "Completed" && (
+            {/* {b.status === "Completed" && (
               <button
                 onClick={() => deleteBooking(b._id)}
                 className="bg-gray-700 text-white px-3 py-1 rounded"
               >
                 Delete
               </button>
-            )}
-
+            )} */}
           </div>
         </div>
       ))}
