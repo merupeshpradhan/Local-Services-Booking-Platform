@@ -66,3 +66,22 @@ export const cancelBooking = asyncHandler(async (req, res) => {
 
   successResponse(res, booking, "Booking cancelled successfully");
 });
+
+// Delete Booking (Provider only after completed)
+export const deleteBooking = asyncHandler(async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+
+  if (!booking) throw new ApiError(404, "Booking not found");
+
+  // Only provider can delete
+  if (booking.provider.toString() !== req.user._id.toString())
+    throw new ApiError(403, "Only provider can delete this booking");
+
+  // Allow delete only if completed
+  if (booking.status !== "Completed")
+    throw new ApiError(400, "Only completed bookings can be deleted");
+
+  await booking.deleteOne();
+
+  successResponse(res, null, "Booking deleted successfully");
+});
