@@ -7,7 +7,7 @@ import {
   updateService,
 } from "../controllers/service.controller.js";
 
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import authMiddleware  from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -16,8 +16,8 @@ router.get("/", getAllServices);
 router.get("/:id", getSingleService);
 
 // 🔒 Protected Route (Provider only)
-router.post("/", verifyJWT, createService);
-router.put("/:id", verifyJWT, updateService);
-router.delete("/:id", verifyJWT, deleteService);
+router.post("/", authMiddleware , createService);
+router.put("/:id", authMiddleware , updateService);
+router.delete("/:id", authMiddleware , deleteService);
 
 export default router;

@@ -75,6 +75,11 @@ export const loginUser = asyncHandler(async (req, res) => {
   );
 });
 
+
+export const getCurrentUser = asyncHandler(async (req, res) => {
+  successResponse(res, { user: req.user }, "User info fetched successfully");
+});
+
 /* -----------------------------------------
    Logout User
 ------------------------------------------ */

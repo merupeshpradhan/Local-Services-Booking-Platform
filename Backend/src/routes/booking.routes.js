@@ -5,20 +5,20 @@ import {
   getUserBookings,
   updateBookingStatus,
 } from "../controllers/booking.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import authMiddleware  from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 // 🔓 Customer creates booking
-router.post("/", verifyJWT, createBooking);
+router.post("/", authMiddleware , createBooking);
 
 // 🔓 Get bookings for logged-in user (Customer or Provider)
-router.get("/", verifyJWT, getUserBookings);
+router.get("/", authMiddleware , getUserBookings);
 
 // 🔒 Provider updates booking status
-router.put("/:id/status", verifyJWT, updateBookingStatus);
+router.put("/:id/status", authMiddleware , updateBookingStatus);
 
 // 🔒 Customer cancels booking
-router.put("/:id/cancel", verifyJWT, cancelBooking);
+router.put("/:id/cancel", authMiddleware , cancelBooking);
 
 export default router;
