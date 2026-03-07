@@ -34,7 +34,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-r from-purple-500 via-blue-400 to-blue-600 flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-white">
