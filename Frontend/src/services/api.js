@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
+  // baseURL: "https://booking-platform-backend-nypg.onrender.com/api/v1",
   baseURL: "http://localhost:4000/api/v1",
 });
 
