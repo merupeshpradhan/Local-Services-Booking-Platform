@@ -1,23 +1,29 @@
+import { toast } from "react-toastify";
 import API from "../services/api";
 
 export default function BookServiceButton({ serviceId, onBooked }) {
+
   const handleBook = async () => {
     try {
-      // Prompt customer for address and date
+
+      toast.info("Enter address and booking date to continue");
+
       const address = prompt("Enter your address:");
       const date = prompt("Enter booking date (YYYY-MM-DD):");
-      const notes = prompt("Any notes? (optional)");
+      const notes = prompt("Extra notes (optional)");
 
       if (!address || !date) {
-        alert("Address and date are required!");
+        toast.error("Address and date are required!");
         return;
       }
 
       await API.post("/bookings", { serviceId, address, date, notes });
-      alert("Booking created successfully!");
-      onBooked(); // refresh list if needed
+
+      toast.success("Booking created successfully!");
+      onBooked();
+
     } catch (err) {
-      alert(err.response?.data?.message || "Booking failed");
+      toast.error(err.response?.data?.message || "Booking failed");
     }
   };
 

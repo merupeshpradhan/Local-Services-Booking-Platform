@@ -47,18 +47,26 @@ export default function ProviderBookings({ user }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Requested": return "bg-yellow-100 text-yellow-800";
-      case "Confirmed": return "bg-blue-100 text-blue-800";
-      case "In-Progress": return "bg-orange-100 text-orange-800";
-      case "Completed": return "bg-green-100 text-green-800";
-      case "Cancelled": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "Requested":
+        return "bg-yellow-100 text-yellow-800";
+      case "Confirmed":
+        return "bg-blue-100 text-blue-800";
+      case "In-Progress":
+        return "bg-orange-100 text-orange-800";
+      case "Completed":
+        return "bg-green-100 text-green-800";
+      case "Cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
-    <div className="mt-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Booking Requests</h2>
+    <div className="">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">
+        Booking Requests
+      </h2>
 
       {bookings.length === 0 && (
         <div className="text-center py-12">
@@ -67,16 +75,37 @@ export default function ProviderBookings({ user }) {
         </div>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm md:grid-cols-3 lg:grid-cols-4">
         {bookings.map((b) => (
-          <div key={b._id} className="bg-white border border-gray-200 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+          <div
+            key={b._id}
+            className="bg-white border border-gray-200 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+          >
             <div className="mb-4">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">{b.service.title}</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                {b.service.title}
+              </h3>
               <div className="space-y-2 text-sm text-gray-700">
-                <p><strong className="text-blue-600">Customer:</strong> {b.customer.fullName}</p>
-                <p><strong className="text-purple-600">Address:</strong> {b.address}</p>
-                <p><strong className="text-indigo-600">Date:</strong> {new Date(b.date).toLocaleDateString()}</p>
-                <p><strong>Status:</strong> <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(b.status)}`}>{b.status}</span></p>
+                <p>
+                  <strong className="text-blue-600">Customer:</strong>{" "}
+                  {b.customer.fullName}
+                </p>
+                <p>
+                  <strong className="text-purple-600">Address:</strong>{" "}
+                  {b.address}
+                </p>
+                <p>
+                  <strong className="text-indigo-600">Date:</strong>{" "}
+                  {new Date(b.date).toLocaleDateString()}
+                </p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(b.status)}`}
+                  >
+                    {b.status}
+                  </span>
+                </p>
               </div>
             </div>
 
